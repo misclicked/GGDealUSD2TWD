@@ -38,9 +38,10 @@ $.getJSON(`${cors}${currencyUrl}`, (data) => {
                     gameID: gameID,
                     dataType: 'json',
                     success: function(data) {
+                        console.log(data[this.gameID]['data']["price_overview"]['final_formatted']);
                         let TWD = data[this.gameID]['data']["price_overview"]['final_formatted'].replace(/[^0-9.-]+/g,"");;
                         if(TWD!=="免費"){
-                            let nTWD = Number(TWD.substring(3));
+                            let nTWD = Number(TWD);
                             nTWD = formatter.format(nTWD);
                             $(steamGames[this.indexValue]).find('span.numeric')[0].textContent = nTWD;
                         }else{
@@ -74,7 +75,7 @@ $.getJSON(`${cors}${currencyUrl}`, (data) => {
                             success: function(data) {
                                 let TWD = data[this.gameID]['data']["price_overview"]['final_formatted'].replace(/[^0-9.-]+/g,"");;
                                 if(TWD!=="免費"){
-                                    let nTWD = Number(TWD.substring(3));
+                                    let nTWD = Number(TWD);
                                     nTWD = formatter.format(nTWD);
                                     $(steamGames2[this.indexValue]).find('span.numeric')[0].textContent = nTWD;
                                 }else{
