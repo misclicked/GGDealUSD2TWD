@@ -1,0 +1,19 @@
+{
+    "name": "gg.deals usd to twd",
+    "version": "1.0",
+    "description": "convert usd to twd based on https://tw.rter.info/, and fetch steam price data from steam using steamapi",
+    "permissions": ["storage","webNavigation","activeTab","https://tw.rter.info/"],
+    "background": {
+        "scripts": ["background.js"],
+        "presistent": false
+    },
+    "content_scripts":[
+        {
+            "matches": ["https://gg.deals/*"],
+            "js": ["3rdparty/jquery-3.5.1.min.js","ggDealTW.js"],
+            "run_at": "document_end"
+        }
+
+    ],
+    "manifest_version": 2
+}
