@@ -38,7 +38,7 @@ $.getJSON(`${cors}${currencyUrl}`, (data) => {
                     gameID: gameID,
                     dataType: 'json',
                     success: function(data) {
-                        let TWD = data[this.gameID]['data']["price_overview"]['final_formatted'];
+                        let TWD = data[this.gameID]['data']["price_overview"]['final_formatted'].replace(/[^0-9.-]+/g,"");;
                         if(TWD!=="免費"){
                             let nTWD = Number(TWD.substring(3));
                             nTWD = formatter.format(nTWD);
@@ -72,7 +72,7 @@ $.getJSON(`${cors}${currencyUrl}`, (data) => {
                             gameID: gameID,
                             dataType: 'json',
                             success: function(data) {
-                                let TWD = data[this.gameID]['data']["price_overview"]['final_formatted'];
+                                let TWD = data[this.gameID]['data']["price_overview"]['final_formatted'].replace(/[^0-9.-]+/g,"");;
                                 if(TWD!=="免費"){
                                     let nTWD = Number(TWD.substring(3));
                                     nTWD = formatter.format(nTWD);
