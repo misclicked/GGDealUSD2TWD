@@ -1,3 +1,4 @@
+const steamAPIUrl = 'https://store.steampowered.com/api/appdetails?';
 setInterval(()=>{
     {
         var games=$('div.item-list')
@@ -15,14 +16,24 @@ setInterval(()=>{
                     continue;
                     
                 var gameTitle = $(game).find('.title')[0].textContent.toLowerCase();
-                
                 chrome.runtime.sendMessage({
-                    type: 'getPrice',
-                    value: gameTitle
+                    type: 'getID',
+                    value: gameTitle, 
+                    currentID: i
                 }, function(value){
-                    console.log(value);
-                    if(value === undefined)return;
-                    $(game).find('span.numeric')[0].textContent = value;
+                    if(value.data === undefined)return;
+                    chrome.runtime.sendMessage({
+                        type: 'getPrice',
+                        value: value.data, 
+                        currentID: value.extra
+                    }, function(value){
+                        try{
+                            $(games[value.extra]).find('span.numeric')[0].textContent =
+                             value.data[value.orgID].data.price_overview.final_formatted;
+                        }catch(e){
+                            console.log(value);
+                        }
+                    });
                 });
             }else{
                 var curr = $(game).find('span.numeric')[0].textContent;

@@ -8,6 +8,7 @@ $.ajax({
     }
 });
 var fuse;
+var steamMap = {};
 $.ajax({
     url: 'http://api.steampowered.com/ISteamApps/GetAppList/v0002/',
     dataType: 'json',
@@ -17,30 +18,40 @@ $.ajax({
                 url: 'http://api.steampowered.com/ISteamApps/GetAppList/v0001/',
                 dataType: 'json',
                 success: (data)=>{
-                    fuse = new Fuse(data.applist.apps, {keys: ['name']});
+                    for(var i=0;i<data.applist.apps.app.length;i++){
+                        var game = data.applist.apps.app[i];
+                        steamMap[game.name.toLowerCase()] = game.appid;
+                    }
+                    fuse = new Fuse(data.applist.apps.app, {keys: ['name']});
                 }
             });
         }else{
+            for(var i=0;i<data.applist.apps.length;i++){
+                var game = data.applist.apps[i];
+                steamMap[game.name.toLowerCase()] = game.appid;
+            }
             fuse = new Fuse(data.applist.apps, {keys: ['name']});
         }
     }
 });
 chrome.runtime.onMessage.addListener(function(request, sender, callback) {
-    if (request.type == 'convert') {
+    if (request.type === 'convert') {
         var money = Number(request.value.replace(/[^0-9.-]+/g,""));
         callback( "NT$ " + Math.ceil(money * USD2TWD) );
+    }else if (request.type === 'getID'){
+        id = steamMap[request.value]
+        if(id === undefined)
+            id = fuse.search(request.value)[0].item.appid;
+        callback({data: id, extra: request.currentID});
         return true;
-    }else if (request.type == 'getPrice'){
-        id = fuse.search(request.value)[0].item.appid;
-        var OP  = 'appids='+id+'&cc=tw&filters=price_overview';
+    }else if (request.type === 'getPrice'){
+        var OP  = 'appids='+request.value+'&cc=tw&filters=price_overview';
+        console.log(`${steamAPIUrl}${OP}`);
         $.ajax({
             url: `${steamAPIUrl}${OP}`,
             dataType: 'json',
             success: (data)=>{
-                console.log(data);
-                price = data[id].data.price_overview.final_formatted;
-                console.log(price); 
-                callback( price );
+                callback( {data: data, extra: request.currentID, orgID: request.value} );
             }
         });
         return true;
