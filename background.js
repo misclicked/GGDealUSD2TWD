@@ -8,7 +8,12 @@ $.ajax({
     }
 });
 var fuse;
-var steamMap = {};
+var steamMap = new Map();
+var steamLst = [];
+const options = {
+    limit: 1,
+    allowTypo: false
+}
 $.ajax({
     url: 'http://api.steampowered.com/ISteamApps/GetAppList/v0002/',
     dataType: 'json',
@@ -20,17 +25,37 @@ $.ajax({
                 success: (data)=>{
                     for(var i=0;i<data.applist.apps.app.length;i++){
                         var game = data.applist.apps.app[i];
-                        steamMap[game.name.toLowerCase()] = game.appid;
+                        var gameTitle = game.name;
+                        if(steamMap.has(gameTitle)){
+                            game.appid = Math.min(Number(game.appid), steamMap.get(gameTitle))
+                        };
+                        steamMap.set(game.name, Number(game.appid));
                     }
-                    fuse = new Fuse(data.applist.apps.app, {keys: ['name']});
+                    steamLst = Array.from(steamMap, ([name, appid]) => ({ name, appid }));
+                    steamLst = steamLst.filter(t=>t.namePrepared = fuzzysort.prepare(t.name));
+                    steamLst = steamLst.map(t=>t.namePrepared);
+                    //console.log(steamMap)
+                    //console.log(fuzzysort.go('Crysis 3', steamLst, options)[0].target);
+                    //fuse = new Fuse(steamLst, {keys: ['name']});
+                    console.log(steamMap);
                 }
             });
         }else{
             for(var i=0;i<data.applist.apps.length;i++){
                 var game = data.applist.apps[i];
-                steamMap[game.name.toLowerCase()] = game.appid;
+                var gameTitle = game.name;
+                if(steamMap.has(gameTitle)){
+                    game.appid = Math.min(Number(game.appid), steamMap.get(gameTitle));
+                }
+                steamMap.set(game.name, Number(game.appid));
             }
-            fuse = new Fuse(data.applist.apps, {keys: ['name']});
+            steamLst = Array.from(steamMap, ([name, appid]) => ({ name, appid }));
+            steamLst = steamLst.filter(t=>t.namePrepared = fuzzysort.prepare(t.name));
+            steamLst = steamLst.map(t=>t.namePrepared);
+            //console.log(steamMap)
+            //console.log(fuzzysort.go('Crysis 3', steamLst, options)[0].target);
+            //fuse = new Fuse(steamLst, {keys: ['name']});
+            console.log(steamMap);
         }
     }
 });
@@ -39,14 +64,15 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
         var money = Number(request.value.replace(/[^0-9.-]+/g,""));
         callback( "NT$ " + Math.ceil(money * USD2TWD) );
     }else if (request.type === 'getID'){
-        id = steamMap[request.value]
-        if(id === undefined)
-            id = fuse.search(request.value)[0].item.appid;
-        callback({data: id, extra: request.currentID});
+        result = fuzzysort.go(request.value, steamLst, options)[0].target;
+        id = steamMap.get(result);
+        console.log(steamMap.has(result));
+        console.log(result);
+        console.log(steamMap.get(result));
+        callback({data: id, extra: request.currentID, fuzzyResult: result});
         return true;
     }else if (request.type === 'getPrice'){
         var OP  = 'appids='+request.value+'&cc=tw&filters=price_overview';
-        console.log(`${steamAPIUrl}${OP}`);
         $.ajax({
             url: `${steamAPIUrl}${OP}`,
             dataType: 'json',

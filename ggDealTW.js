@@ -15,12 +15,13 @@ setInterval(()=>{
                 if($(game).find('.title')[0].textContent === undefined)
                     continue;
                     
-                var gameTitle = $(game).find('.title')[0].textContent.toLowerCase();
+                var gameTitle = $(game).find('.title')[0].textContent;
                 chrome.runtime.sendMessage({
                     type: 'getID',
                     value: gameTitle, 
                     currentID: i
                 }, function(value){
+                    console.log(value);
                     if(value.data === undefined)return;
                     chrome.runtime.sendMessage({
                         type: 'getPrice',
@@ -31,7 +32,6 @@ setInterval(()=>{
                             $(games[value.extra]).find('span.numeric')[0].textContent =
                              value.data[value.orgID].data.price_overview.final_formatted;
                         }catch(e){
-                            console.log(value);
                         }
                     });
                 });

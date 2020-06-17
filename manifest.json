@@ -6,7 +6,7 @@
         "https://tw.rter.info/","http://api.steampowered.com/",
         "https://store.steampowered.com/"],
     "background": {
-        "scripts": ["3rdparty/fuse.js","3rdparty/jquery-3.5.1.min.js","background.js"],
+        "scripts": ["3rdparty/fuzzysort.js","3rdparty/jquery-3.5.1.min.js","background.js"],
         "presistent": false
     },
     "content_scripts":[
